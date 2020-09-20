@@ -1,6 +1,6 @@
 <%-- 
-    Document   : index
-    Created on : Jul 20, 2020, 11:10:56 PM
+    Document   : error
+    Created on : Aug 30, 2020, 6:13:26 PM
     Author     : Sakun
 --%>
 
@@ -9,9 +9,10 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
+        <title>Employee CRUD</title>
     </head>
     <body>
-        <h1>Hello World!</h1>
+        <h1>ERROR</h1>
+        <h2><%=exception.getMessage()%></h2>
     </body>
 </html>

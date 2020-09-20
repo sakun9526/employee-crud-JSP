@@ -1,62 +1,78 @@
 
 package net.employeemanagement.dao;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import net.employeemanagement.model.employees;
+import net.employeemanagement.model.Employees;
 
 //this class has all the JDBC related stuff 
 // JDBC -> Java Database Connectivity
 //DAO -> Data Access Objects 
 // provides CRUD database operations 
 public class employeesDAO {
-    private String jdbcURL = "jdbc:mysql://localhost:3306/employeecrud?useSSL=false";
-    private String jdbcUsername = "root";
-    private String jdbcPassword = "";
+    private final String jdbcURL = "jdbc:mysql://localhost:3306/employeecrud";
+    private final String jdbcUsername = "root";
+    private final String jdbcPassword = "";
     
     //users table operations 
-    private static final String INSERT_EMPLOYEES_SQL = "INSERT INTO Employees" + "(name, email, nic) VALUES" + "(?, ?, ?)";  
-    private static final String SELECT_EMPLOYEE_BY_ID = "select id, name, email, nic from employees where id = ?";
-    private static final String SELECT_ALL_EMPLOYEES = "select * from employees";
-    private static final String DELETE_EMPLOYEES_SQL = "delete from employees where id = ? ;";
-    private static final String UPDATE_EMPLOYEES_SQL = "update employees set name =? , email = ?, nic = ? where id = ? ;" ;
+    private static final String INSERT_EMPLOYEES_SQL = "INSERT INTO employees (name, email, nic) VALUES (?,?,?);";  
+    private static final String SELECT_EMPLOYEE_BY_ID = "SELECT id, name, email, nic FROM employees WHERE id = ?";
+    private static final String SELECT_ALL_EMPLOYEES = "SELECT * FROM employees";
+    private static final String DELETE_EMPLOYEES_SQL = "DELETE FROM employees where id = ? ;";
+    private static final String UPDATE_EMPLOYEES_SQL = "UPDATE employees SET name =? , email = ?, nic = ? WHERE id = ? ;" ;
     
+    public employeesDAO(){
+        
+    }
     protected Connection getConnection(){
         Connection connection = null; 
         
         try{
-            connection = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
             Class.forName("com.mysql.jdbc.Driver");
-        } catch (SQLException e){
-            e.printStackTrace();
-        } catch (ClassNotFoundException e ) {
-            e.printStackTrace();
-        }
+            connection = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
+        } catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         return connection;
     }
     
     //insert employee
-    public void insertEmployee (employees employee) throws SQLException{
-        try (Connection connection = getConnection();PreparedStatement preparedStatement = connection.prepareStatement(INSERT_EMPLOYEES_SQL))
+    public boolean insertEmployee (Employees employees) throws SQLException{
+        boolean rowInserted = false;
+        try (Connection connection = getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(INSERT_EMPLOYEES_SQL);)
         {
-            preparedStatement.setString(1, employee.getName());
-            preparedStatement.setString(2, employee.getEmail());
-            preparedStatement.setInt(3, employee.getNic());
-        } catch (Exception e){
-            e.printStackTrace();
-          }
-    }
+            preparedStatement.setString(1, employees.getName());
+            preparedStatement.setString(2, employees.getEmail());
+            preparedStatement.setString(3, employees.getNic());
+            
+            rowInserted = preparedStatement.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            printSQLException(e);
+        }  
+        
+        return rowInserted;
+    }   
     
     //update employee
-    public boolean updateEmployee (employees employee) throws SQLException {
+    public boolean updateEmployee (Employees employees) throws SQLException {
         boolean rowUpdated;
         try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_EMPLOYEES_SQL))
         {
-            preparedStatement.setString(1, employee.getName());
-            preparedStatement.setString(2, employee.getEmail());
-            preparedStatement.setInt(3, employee.getNic());
-            preparedStatement.setInt(4,employee.getId());
+            preparedStatement.setString(1, employees.getName());
+            preparedStatement.setString(2, employees.getEmail());
+            preparedStatement.setString(3, employees.getNic());
+            preparedStatement.setInt(4,employees.getId());
             
             rowUpdated = preparedStatement.executeUpdate() > 0;
             
@@ -66,8 +82,8 @@ public class employeesDAO {
     }
     
     //select employee from an id
-    public employees selectEmployee(int id) {
-        employees employee = null;
+    public Employees selectEmployee(int id) {
+        Employees employees = null;
         // Step 1: Establishing a Connection
         try (Connection connection = getConnection();
             // Step 2:Create a statement using connection object
@@ -81,19 +97,20 @@ public class employeesDAO {
             while (rs.next()) {
                 String name = rs.getString("name");
                 String email = rs.getString("email");
-                int nic = rs.getInt("nic");
-                employee = new employees (id, name, email, nic);
+                String nic = rs.getString("nic");
+                employees = new Employees (id, name, email, nic);
             }
         } catch (SQLException e) {
             printSQLException(e);
         }
-        return employee;
+        return employees;
     }
     
     //delete employee from ID
     public boolean deleteEmployee (int id) throws SQLException {
         boolean rowDeleted;
-        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(DELETE_EMPLOYEES_SQL);) {
+        try (Connection connection = getConnection(); 
+                PreparedStatement statement = connection.prepareStatement(DELETE_EMPLOYEES_SQL);) {
             statement.setInt(1, id);
             rowDeleted = statement.executeUpdate() > 0;
         }
@@ -101,10 +118,10 @@ public class employeesDAO {
     }
     
     //list all the employees
-    public List < employees > selectAllEmployees() {
+    public List < Employees > selectAllEmployees() {
 
         // using try-with-resources to avoid closing resources (boiler plate code)
-        List < employees > employeeset = new ArrayList < > ();
+        List < Employees > employees = new ArrayList < > ();
         // Step 1: Establishing a Connection
         try (Connection connection = getConnection();
 
@@ -119,13 +136,13 @@ public class employeesDAO {
                 int id = rs.getInt("id");
                 String name = rs.getString("name");
                 String email = rs.getString("email");
-                int nic = rs.getInt("nic");
-                employeeset.add(new employees(id, name, email, nic));
+                String nic = rs.getString("nic");
+                employees.add(new Employees(id, name, email, nic));
             }
         } catch (SQLException e) {
             printSQLException(e);
         }
-        return employeeset;
+        return employees;
     }
 
     private void printSQLException(SQLException ex) {

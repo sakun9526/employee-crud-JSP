@@ -1,14 +1,24 @@
-
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package net.employeemanagement.model;
 
-public class employees {
+/**
+ *
+ * @author Sakun
+ */
+public class Employees {
     
-    private int id;
-    private String name;
-    private String email;
-    private int nic;
+    protected int id;
+    protected String name;
+    protected String email;
+    protected String nic;
     
-    public employees (int id , String name, String email, int nic ){
+    public Employees() {}
+    
+    public Employees (int id ,String name, String email, String nic ){
         super();
         this.id = id;
         this.name = name;
@@ -16,7 +26,7 @@ public class employees {
         this.nic = nic;
     }
     
-    public employees (String name, String email, int nic ){
+    public Employees (String name, String email, String nic ){
         super();
         this.name = name;
         this.email= email;
@@ -47,12 +57,16 @@ public class employees {
         this.email = email; 
     }
     
-    public int getNic(){
+    public String getNic(){
         return nic;
     }
     
-    public void setNic(int nic){
+    public void setNic(String nic){
         this.nic = nic; 
     }
     
 }
+
+
+
+
